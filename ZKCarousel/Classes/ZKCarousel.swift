@@ -7,6 +7,11 @@
 //
 
 import UIKit
+import AVFoundation
+
+enum MediaType: Int {
+    case photo = 0, video
+}
 
 final public class ZKCarousel: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewDelegate, UICollectionViewDataSource {
     
@@ -20,6 +25,12 @@ final public class ZKCarousel: UIView, UICollectionViewDelegateFlowLayout, UICol
             }
         }
     }
+    
+    public var mediaTypeArr: [String] = []
+    
+    public var pageNumber: CGFloat = 0.0
+    
+    public var delegate: ZKCarouselDelegate?
     
     private lazy var tapGesture : UITapGestureRecognizer = {
         let tap = UITapGestureRecognizer(target: self, action: #selector(tapGestureHandler(tap:)))
@@ -43,7 +54,8 @@ final public class ZKCarousel: UIView, UICollectionViewDelegateFlowLayout, UICol
         cv.delegate = self
         cv.dataSource = self
         cv.isPagingEnabled = true
-        cv.register(carouselCollectionViewCell.self, forCellWithReuseIdentifier: "slideCell")
+        cv.register(PhotoCell.self, forCellWithReuseIdentifier: "photoCell")
+        cv.register(VideoCell.self, forCellWithReuseIdentifier: "videoCell")
         cv.clipsToBounds = true
         cv.backgroundColor = .clear
         cv.showsHorizontalScrollIndicator = false
@@ -89,14 +101,27 @@ final public class ZKCarousel: UIView, UICollectionViewDelegateFlowLayout, UICol
         let visiblePoint = CGPoint(x: visibleRect.midX, y: visibleRect.midY)
         let visibleIndexPath: IndexPath = collectionView.indexPathForItem(at: visiblePoint) ?? IndexPath(item: 0, section: 0)
         let index = visibleIndexPath.item
-
-        if index == (slides.count-1) {
-            let indexPathToShow = IndexPath(item: 0, section: 0)
-            self.collectionView.selectItem(at: indexPathToShow, animated: true, scrollPosition: .centeredHorizontally)
-        } else {
-            let indexPathToShow = IndexPath(item: (index + 1), section: 0)
-            self.collectionView.selectItem(at: indexPathToShow, animated: true, scrollPosition: .centeredHorizontally)
+        print("YESSIR")
+        print(index)
+        
+        if (self.mediaTypeArr[index] == "video") {
+            delegate?.didPressPlay(self)
         }
+//
+//        if index == (slides.count-1) {
+//            let indexPathToShow = IndexPath(item: 0, section: 0)
+//            self.collectionView.selectItem(at: indexPathToShow, animated: true, scrollPosition: .centeredHorizontally)
+//        } else {
+//            let indexPathToShow = IndexPath(item: (index + 1), section: 0)
+//            self.collectionView.selectItem(at: indexPathToShow, animated: true, scrollPosition: .centeredHorizontally)
+//        }
+    }
+    
+    private func getCurrentIndex() {
+        var visibleRect = CGRect()
+        visibleRect.origin = collectionView.contentOffset
+        visibleRect.size = collectionView.bounds.size
+        let visiblePoint = CGPoint(x: visibleRect.midX, y: visibleRect.midY)
     }
     
     private var timer : Timer = Timer()
@@ -116,6 +141,14 @@ final public class ZKCarousel: UIView, UICollectionViewDelegateFlowLayout, UICol
         collectionView.removeGestureRecognizer(tapGesture)
     }
     
+    public func reloadAtIndex() {
+//        let indexPath = self.selectedIndexPath()!
+//        print("Reloading at \(indexPath)")
+//        self.collectionView.reloadItems(at: [indexPath])
+        self.collectionView.reloadData()
+
+    }
+    
     public func selectedIndexPath() -> IndexPath? {
         var visibleRect = CGRect()
         visibleRect.origin = collectionView.contentOffset
@@ -125,11 +158,20 @@ final public class ZKCarousel: UIView, UICollectionViewDelegateFlowLayout, UICol
     }
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "slideCell", for: indexPath) as! carouselCollectionViewCell
-        cell.slide = self.slides[indexPath.item]
-        return cell
+//        print("CELL # \( indexPath.item) or \(self.selectedIndexPath()) --> \(self.mediaTypeArr[indexPath.item])")
+        
+        if self.mediaTypeArr[indexPath.item] == "video" {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "videoCell", for: indexPath) as! VideoCell
+            cell.slide = self.slides[indexPath.item]
+            return cell
+        }
+        else {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! PhotoCell
+            cell.slide = self.slides[indexPath.item]
+            return cell
+        }
     }
-    
+        
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return self.slides.count
     }
@@ -148,109 +190,21 @@ final public class ZKCarousel: UIView, UICollectionViewDelegateFlowLayout, UICol
     }
     
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let pageNumber = round(scrollView.contentOffset.x / scrollView.frame.size.width)
+        self.pageNumber = round(scrollView.contentOffset.x / scrollView.frame.size.width)
         pageControl.currentPage = Int(pageNumber)
     }
     
-}
-
-fileprivate class carouselCollectionViewCell: UICollectionViewCell {
-    
-    fileprivate var slide : ZKCarouselSlide? {
-        didSet {
-            guard let slide = slide else {
-                print("ZKCarousel could not parse the slide you provided. \n\(String(describing: self.slide))")
-                return
-            }
-            self.parseData(forSlide: slide)
-        }
+    public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        pageControl.currentPage = Int(pageNumber)
+//        print("Current Page \(pageNumber)")
+        delegate?.didSlideChange(self)
     }
-    
-    private lazy var imageView : UIImageView = {
-        let iv = UIImageView()
-        iv.contentMode = .scaleAspectFill
-        iv.backgroundColor = .clear
-        iv.clipsToBounds = true
-        iv.addBlackGradientLayer(frame: self.bounds)
-        iv.translatesAutoresizingMaskIntoConstraints = false
-        return iv
-    }()
-    
-    private var titleLabel : UILabel = {
-        let label = UILabel()
-        label.adjustsFontSizeToFitWidth = true
-        label.font = UIFont.boldSystemFont(ofSize: 40)
-        label.textColor = .white
-        label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    private var descriptionLabel : UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 19)
-        label.textColor = .white
-        label.textAlignment = .center
-        label.numberOfLines = 0
-        label.backgroundColor = .clear
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setup()
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    private func setup() {
-        self.backgroundColor = .clear
-        self.clipsToBounds = true
-        
-        self.addSubview(self.imageView)
-        NSLayoutConstraint(item: self.imageView, attribute: .top, relatedBy: .equal, toItem: self, attribute: .top, multiplier: 1.0, constant: 0).isActive = true
-        NSLayoutConstraint(item: self.imageView, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1.0, constant: 0).isActive = true
-        NSLayoutConstraint(item: self.imageView, attribute: .left, relatedBy: .equal, toItem: self, attribute: .left, multiplier: 1.0, constant: 0).isActive = true
-        NSLayoutConstraint(item: self.imageView, attribute: .right, relatedBy: .equal, toItem: self, attribute: .right, multiplier: 1.0, constant: 0).isActive = true
-        
-        self.addSubview(self.descriptionLabel)
-        let left = NSLayoutConstraint(item: descriptionLabel, attribute: .left, relatedBy: .equal, toItem: self, attribute: .left, multiplier: 1.0, constant: 15)
-        let right = NSLayoutConstraint(item: descriptionLabel, attribute: .right, relatedBy: .equal, toItem: self, attribute: .right, multiplier: 1.0, constant: -15)
-        let bottom = NSLayoutConstraint(item: descriptionLabel, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 0.9, constant: 0)
-        let top = NSLayoutConstraint(item: descriptionLabel, attribute: .top, relatedBy: .equal, toItem: self, attribute: .centerY, multiplier: 1.25, constant: 0)
-        NSLayoutConstraint.activate([left, right, bottom, top])
-        
-        self.addSubview(self.titleLabel)
-        NSLayoutConstraint(item: self.titleLabel, attribute: .left, relatedBy: .equal, toItem: self, attribute: .left, multiplier: 1.0, constant: 15).isActive = true
-        NSLayoutConstraint(item: self.titleLabel, attribute: .right, relatedBy: .equal, toItem: self, attribute: .right, multiplier: 1.0, constant: -15).isActive = true
-        NSLayoutConstraint(item: self.titleLabel, attribute: .bottom, relatedBy: .equal, toItem: self.descriptionLabel, attribute: .top, multiplier: 1.0, constant: 8).isActive = true
-        NSLayoutConstraint(item: self.titleLabel, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1.0, constant: 43).isActive = true
-    }
-    
-    private func parseData(forSlide slide: ZKCarouselSlide) {
-        if let image = slide.slideImage {
-            self.imageView.image = image
-        }
-        
-        if let title = slide.slideTitle {
-            self.titleLabel.text = title
-        }
-        
-        if let description = slide.slideDescription {
-            self.descriptionLabel.text = description
-        }
-        
-        return
-    }
-
 }
 
 final public class ZKCarouselSlide : NSObject {
     
     public var slideImage : UIImage?
+    public var slideVideo : AVPlayerLayer?
     public var slideTitle : String?
     public var slideDescription: String?
     
@@ -260,37 +214,16 @@ final public class ZKCarouselSlide : NSObject {
         slideDescription = description
     }
     
-    override init() {
-        super.init()
+    public init(video: AVPlayerLayer, title: String, description: String) {
+        slideVideo = video
+        slideTitle = title
+        slideDescription = description
     }
     
-}
-
-extension UIView {
-    
-    func addConstraintsWithFormat(_ format: String, views: UIView...) {
-        
-        var viewsDictionary = [String: UIView]()
-        for (index, view) in views.enumerated() {
-            let key = "v\(index)"
-            viewsDictionary[key] = view
-            view.translatesAutoresizingMaskIntoConstraints = false
-        }
-        
-        addConstraints(NSLayoutConstraint.constraints(withVisualFormat: format, options: NSLayoutConstraint.FormatOptions(), metrics: nil, views: viewsDictionary))
+    override public init() {
+//        super.init()
     }
     
-    
-}
-
-extension UIImageView {
-    func addBlackGradientLayer(frame: CGRect){
-        let gradient = CAGradientLayer()
-        gradient.frame = frame
-        gradient.colors = [UIColor.clear.cgColor, UIColor.black.withAlphaComponent(0.8).cgColor]
-        gradient.locations = [0.0, 0.6]
-        self.layer.insertSublayer(gradient, at: 0)
-    }
 }
 
 

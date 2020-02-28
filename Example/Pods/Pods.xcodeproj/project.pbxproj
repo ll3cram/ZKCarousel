@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		342C4CEB65FCF86F3D1527A6B92F849B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 436BAA54A31999B53B3CC7115C55FE50 /* Foundation.framework */; };
+		462C85A62409D03800A83057 /* PhotoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 462C85A52409D03800A83057 /* PhotoCell.swift */; };
+		462C85A82409D04800A83057 /* VideoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 462C85A72409D04800A83057 /* VideoCell.swift */; };
+		462C85AA2409D09300A83057 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 462C85A92409D09300A83057 /* Extensions.swift */; };
 		5522E143CFCACC7067D8471A47939318 /* Pods-ZKCarousel_Tests-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A40040E74AC1D024D11FD17CE6CBF31 /* Pods-ZKCarousel_Tests-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6043E704814052E3BC04AD22ED9772F9 /* ZKCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71413F4B80A2D376A396F15AD53A798A /* ZKCarousel.swift */; };
 		700761A7842D9B8A7C8399D76D3271DE /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 436BAA54A31999B53B3CC7115C55FE50 /* Foundation.framework */; };
@@ -50,6 +53,9 @@
 		3754BCB37056067643ED1931DB64DD82 /* ZKCarousel-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "ZKCarousel-prefix.pch"; sourceTree = "<group>"; };
 		40D92E8A4ED688C1FB5D588A1BB7EDE9 /* ZKCarousel-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "ZKCarousel-umbrella.h"; sourceTree = "<group>"; };
 		436BAA54A31999B53B3CC7115C55FE50 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.2.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		462C85A52409D03800A83057 /* PhotoCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCell.swift; sourceTree = "<group>"; };
+		462C85A72409D04800A83057 /* VideoCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCell.swift; sourceTree = "<group>"; };
+		462C85A92409D09300A83057 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		53CE3910723927002424D56A5F4AF55F /* Pods-ZKCarousel_Example-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-ZKCarousel_Example-dummy.m"; sourceTree = "<group>"; };
 		62C5ED5118FDF49B82E880DF40A0A59B /* ZKCarousel-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "ZKCarousel-dummy.m"; sourceTree = "<group>"; };
 		6EA7BDEF77DE39D3D335479B6BA2D69B /* Pods-ZKCarousel_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-ZKCarousel_Example.release.xcconfig"; sourceTree = "<group>"; };
@@ -130,12 +136,31 @@
 		225A2C59774CAE3D05D9C0EB48E9197D /* ZKCarousel */ = {
 			isa = PBXGroup;
 			children = (
+				462C85A42409CFF600A83057 /* Cells */,
+				462C85A32409CFEB00A83057 /* Extensions */,
 				71413F4B80A2D376A396F15AD53A798A /* ZKCarousel.swift */,
 				6C19F51A2F2620556D69DCCD84774E3E /* Pod */,
 				D57814B93B0EC94DA4E9FD8561E96976 /* Support Files */,
 			);
 			name = ZKCarousel;
 			path = ../..;
+			sourceTree = "<group>";
+		};
+		462C85A32409CFEB00A83057 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				462C85A92409D09300A83057 /* Extensions.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		462C85A42409CFF600A83057 /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				462C85A52409D03800A83057 /* PhotoCell.swift */,
+				462C85A72409D04800A83057 /* VideoCell.swift */,
+			);
+			path = Cells;
 			sourceTree = "<group>";
 		};
 		6C19F51A2F2620556D69DCCD84774E3E /* Pod */ = {
@@ -369,7 +394,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				462C85AA2409D09300A83057 /* Extensions.swift in Sources */,
 				E404CE61D40CC4BA043869046C6939F7 /* ZKCarousel-dummy.m in Sources */,
+				462C85A82409D04800A83057 /* VideoCell.swift in Sources */,
+				462C85A62409D03800A83057 /* PhotoCell.swift in Sources */,
 				6043E704814052E3BC04AD22ED9772F9 /* ZKCarousel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
